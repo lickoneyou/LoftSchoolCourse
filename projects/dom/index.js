@@ -11,6 +11,9 @@
    createDivWithText('loftschool') // создаст элемент div, поместит в него 'loftschool' и вернет созданный элемент
  */
 function createDivWithText(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div;
 }
 
 /*
@@ -22,6 +25,7 @@ function createDivWithText(text) {
    prepend(document.querySelector('#one'), document.querySelector('#two')) // добавит элемент переданный первым аргументом в начало элемента переданного вторым аргументом
  */
 function prepend(what, where) {
+  where.prepend(what);
 }
 
 /*
@@ -44,6 +48,11 @@ function prepend(what, where) {
    findAllPSiblings(document.body) // функция должна вернуть массив с элементами div и span т.к. следующим соседом этих элементов является элемент с тегом P
  */
 function findAllPSiblings(where) {
+  const res = [];
+  for (const el of where.childNodes) {
+    if (el.nodeName === 'P') res.push(el.previousElementSibling);
+  }
+  return res;
 }
 
 /*
@@ -66,7 +75,7 @@ function findAllPSiblings(where) {
 function findError(where) {
   const result = [];
 
-  for (const child of where.childNodes) {
+  for (const child of where.children) {
     result.push(child.textContent);
   }
 
@@ -86,6 +95,11 @@ function findError(where) {
    должно быть преобразовано в <div></div><p></p>
  */
 function deleteTextNodes(where) {
+  for (const el of where.childNodes) {
+    if (el.nodeType === 3) {
+      where.removeChild(el);
+    }
+  }
 }
 
 /*
@@ -109,6 +123,48 @@ function deleteTextNodes(where) {
    }
  */
 function collectDOMStat(root) {
+  const res = {
+    tags: {},
+    classes: {},
+    texts: 0,
+  };
+
+  const collect = [];
+
+  function rec(col) {
+    if (!col.childNodes.length) {
+      return collect;
+    }
+    for (const el of col.childNodes) {
+      collect.push(el);
+      rec(el);
+    }
+  }
+  rec(root);
+
+  for (const el of collect) {
+    if (el.nodeType === 3) {
+      res.texts++;
+    }
+    if (el.nodeType != 3) {
+      if (el.nodeName in res.tags) {
+        res.tags[el.nodeName]++;
+      } else {
+        res.tags[el.nodeName] = 1;
+      }
+    }
+    if (el.nodeType != 3 && el.classList.length) {
+      for (const cl of el.classList) {
+        if (cl in res.classes) {
+          res.classes[cl]++;
+        } else {
+          res.classes[cl] = 1;
+        }
+      }
+    }
+  }
+
+  return res;
 }
 
 export {
